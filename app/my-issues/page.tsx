@@ -1,0 +1,21 @@
+'use client'
+
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
+import { useQuery } from 'convex/react'
+import { useConvexAuth } from '@convex-dev/auth/react'
+import { api } from '@/convex/_generated/api'
+import { ArrowLeft, FileWarning, Loader2, MapPin, Search } from 'lucide-react'
+
+const label = (value: string) => value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+const date = (value: number) => new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(value)
+
+export default function MyIssuesPage() {
+  const { isLoading, isAuthenticated } = useConvexAuth()
+  const issues = useQuery(api.issues.myIssues, isAuthenticated ? {} : 'skip')
+  const [search, setSearch] = useState('')
+  if (isLoading) return <main className="grid min-h-screen place-items-center bg-[#f6f8fb] text-slate-500"><Loader2 className="animate-spin" /></main>
+  if (!isAuthenticated) return <main className="grid min-h-screen place-items-center bg-[#f6f8fb] p-6"><div className="text-center"><h1 className="text-xl font-bold text-slate-900">Sign in required</h1><p className="mt-2 text-sm text-slate-500">Sign in to view your submitted issues.</p><Link href="/" className="mt-5 inline-block text-sm font-semibold text-[#245582]">Go to sign in</Link></div></main>
+  const visible = useMemo(() => (issues ?? []).filter((issue) => `${issue.title} ${issue.referenceNumber} ${issue.address}`.toLowerCase().includes(search.toLowerCase())), [issues, search])
+  return <main className="min-h-screen bg-[#f6f8fb] px-5 py-8 text-slate-900 sm:px-8 lg:px-12"><div className="mx-auto max-w-5xl"><Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-[#245582] hover:underline"><ArrowLeft size={16} /> Dashboard</Link><div className="mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#4d83b1]">CivicFix</p><h1 className="mt-1 text-3xl font-bold tracking-tight">My issues</h1><p className="mt-2 text-sm text-slate-500">Track every report you have submitted to Northbridge.</p></div><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} /><input aria-label="Search my issues" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search reports..." className="h-10 rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-[#7fa9cb]" /></div></div><section className="mt-7 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">{issues === undefined ? <div className="flex items-center justify-center gap-2 p-12 text-sm text-slate-500"><Loader2 className="animate-spin" size={17} /> Loading your issues...</div> : visible.length === 0 ? <div className="p-12 text-center"><FileWarning className="mx-auto text-slate-300" size={32} /><h2 className="mt-3 font-semibold">{search ? 'No matching reports' : 'No reports yet'}</h2><p className="mt-1 text-sm text-slate-500">{search ? 'Try another search term.' : 'Your submitted reports will appear here.'}</p></div> : <div className="divide-y divide-slate-100">{visible.map((issue) => <Link key={issue._id} href={`/issues/${issue._id}`} className="block p-5 transition hover:bg-slate-50"><div className="flex flex-col gap-3 sm:flex-row sm:items-center"><div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#eaf1f8] text-[#2d638f]"><FileWarning size={18} /></div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h2 className="truncate text-sm font-semibold">{issue.title}</h2><span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">{issue.referenceNumber}</span></div><div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400"><span>{issue.categoryName}</span><span>•</span><span>{issue.departmentName}</span><span>•</span><MapPin size={12} /><span>{issue.address}</span></div></div><div className="text-left sm:text-right"><p className="text-xs font-semibold text-[#245582]">{label(issue.status)}</p><p className="mt-1 text-[11px] text-slate-400">Created {date(issue.createdAt)}</p></div></div></Link>)}</div>}</section></div></main>
+}

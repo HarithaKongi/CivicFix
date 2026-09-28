@@ -1,0 +1,14 @@
+'use client'
+
+import Link from 'next/link'
+import { useState } from 'react'
+import { useQuery } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import { ArrowLeft, Search, FileWarning } from 'lucide-react'
+
+export default function SearchPage() {
+  const [term, setTerm] = useState('')
+  const [submitted, setSubmitted] = useState('')
+  const results = useQuery(api.issues.publicSearch, submitted ? { term: submitted } : 'skip')
+  return <main className="min-h-screen bg-[#f6f8fb] p-6 text-slate-900 sm:p-10"><div className="mx-auto max-w-3xl"><Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#245582]"><ArrowLeft size={16} /> Dashboard</Link><div className="mt-8 flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.14em] text-[#4d83b1]">Public issues</p><h1 className="mt-1 text-3xl font-bold tracking-tight">Search community reports</h1><p className="mt-2 text-sm text-slate-500">Search public reports by reference, title, description, or location.</p></div></div><form className="mt-6 flex gap-2" onSubmit={(event) => { event.preventDefault(); setSubmitted(term.trim()) }}><label htmlFor="search" className="sr-only">Search public issues</label><input id="search" value={term} onChange={(event) => setTerm(event.target.value)} placeholder="Search public reports" className="h-11 min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-[#7fa9cb] focus:ring-2 focus:ring-[#dbe9f6]" /><button type="submit" className="inline-flex items-center gap-2 rounded-xl bg-[#163b66] px-4 text-xs font-semibold text-white"><Search size={15} /> Search</button></form>{submitted && results === undefined && <p className="mt-6 text-sm text-slate-500">Searching public reports…</p>}{submitted && results?.length === 0 && <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-10 text-center"><FileWarning className="mx-auto text-slate-300" /><p className="mt-3 text-sm text-slate-500">No public reports match your search.</p></div>}{results && results.length > 0 && <div className="mt-6 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">{results.map((issue) => <Link key={issue._id} href={`/track?reference=${encodeURIComponent(issue.referenceNumber)}`} className="block p-5 hover:bg-slate-50"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-semibold">{issue.title}</h2><span className="text-xs font-semibold text-[#245582]">{issue.referenceNumber}</span></div><p className="mt-1 text-xs text-slate-500">{issue.categoryName} · {issue.address || 'Location not provided'}</p><p className="mt-2 line-clamp-2 text-sm text-slate-600">{issue.description}</p></Link>)}</div>}</div></main>
+}
