@@ -212,7 +212,196 @@ export default function Page() {
         </main>
       </div>
 
-      {reportOpen && <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/35 p-4 backdrop-blur-sm"><div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">{submitted ? <div className="py-7 text-center"><div className="mx-auto grid size-14 place-items-center rounded-full bg-emerald-100 text-emerald-600"><CheckCircle2 size={28} /></div><h2 className="mt-4 text-lg font-bold text-slate-900">Report submitted</h2><p className="mt-2 text-sm text-slate-500">Thanks for helping improve your community. Your reference is <span className="font-semibold text-slate-700">{referenceNumber}</span>.</p><button onClick={() => setReportOpen(false)} className="mt-6 rounded-xl bg-[#163b66] px-5 py-2.5 text-xs font-semibold text-white">Done</button></div> : <><div className="flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4d83b1]">New report</p><h2 className="mt-1 text-xl font-bold text-slate-900">What needs attention?</h2><p className="mt-1 text-sm text-slate-500">Give your city team the details they need to help.</p></div><button onClick={() => setReportOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100" aria-label="Close report form"><X size={18} /></button></div><form onSubmit={handleSubmit}><div className="mt-6 space-y-4"><div className="rounded-xl border border-slate-200 bg-slate-50 p-3"><div className="flex items-center justify-between"><div><p className="text-xs font-semibold text-slate-700">Report location</p><p className="mt-1 text-[11px] text-slate-500">Choose the point on the map or use your current location.</p></div><button type="button" onClick={useCurrentLocation((point) => { setLocation(point); setLocationError('') }, setLocationError)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#245582]">Use my location</button></div><LocationMap value={location} onChange={(point) => { setLocation(point); setLocationError('') }} className="mt-3 h-44" /><p className="mt-2 text-[11px] text-slate-500">{formatCoordinates(location)}</p>{locationError && <p className="mt-1 text-[11px] text-amber-700">{locationError}</p>}</div><div className="rounded-xl border border-dashed border-slate-300 bg-white p-3"><div className="flex items-center justify-between gap-3"><div><p className="text-xs font-semibold text-slate-700">Photo evidence</p><p className="mt-1 text-[11px] text-slate-500">Optional JPEG, PNG, WebP, or GIF up to 10 MB.</p></div><label className="cursor-pointer rounded-lg bg-[#eaf1f8] px-2.5 py-1.5 text-[11px] font-semibold text-[#245582]">Add photos<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="sr-only" onChange={(event) => { const selected = Array.from(event.target.files ?? []); const invalid = selected.find((file) => !['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type) || file.size > 10 * 1024 * 1024); if (invalid) { setUploadError(`${invalid.name} is unsupported or larger than 10 MB.`); return } setUploadError(''); setPhotos(selected) }} /></label></div>{photos.length > 0 && <div className="mt-3 grid grid-cols-3 gap-2">{photos.map((photo) => <div key={`${photo.name}-${photo.size}`} className="overflow-hidden rounded-lg border border-slate-200"><img src={URL.createObjectURL(photo)} alt={photo.name} className="aspect-square w-full object-cover" /><button type="button" onClick={() => setPhotos((current) => current.filter((item) => item !== photo))} className="w-full py-1 text-[10px] font-semibold text-rose-600">Remove</button></div>)}</div>}{uploadError && <p role="alert" className="mt-2 text-[11px] text-rose-600">{uploadError}</p>}</div><label className="block text-xs font-semibold text-slate-700">Issue title<input value={title} onChange={(event) => setTitle(event.target.value)} required className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-[#7fa9cb] focus:bg-white" placeholder="e.g. Pothole on Oak Street" /></label><label className="block text-xs font-semibold text-slate-700">Category<select value={category} onChange={(event) => setCategory(event.target.value)} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-[#7fa9cb] focus:bg-white"><option value="General">Select a category</option><option>Roads & sidewalks</option><option>Street lighting</option><option>Sanitation</option><option>Water supply</option><option>Parks & recreation</option></select></label><label className="block text-xs font-semibold text-slate-700">Location<div className="relative mt-1.5"><MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} /><input value={address} onChange={(event) => setAddress(event.target.value)} required className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none focus:border-[#7fa9cb] focus:bg-white" placeholder="Enter the location/address" /></div></label><label className="block text-xs font-semibold text-slate-700">Description<textarea value={description} onChange={(event) => setDescription(event.target.value)} required className="mt-1.5 min-h-[88px] w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-[#7fa9cb] focus:bg-white" placeholder="Tell us what you see..." /></label></div><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-h-5 flex-1">{submitError && <p role="alert" className="text-[11px] font-medium text-rose-600">{submitError}</p>}</div><div className="flex justify-end gap-2"><button type="button" onClick={() => setReportOpen(false)} className="rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-50">Cancel</button><button type="submit" disabled={uploading} aria-busy={uploading} className="rounded-xl bg-[#163b66] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#102e50] disabled:cursor-not-allowed disabled:opacity-60">{uploading ? "Submitting..." : "Submit report"}</button></div></div></form></>}</div></div>
+      {reportOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/35 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+            {submitted ? (
+              <div className="py-7 text-center">
+                <div className="mx-auto grid size-14 place-items-center rounded-full bg-emerald-100 text-emerald-600">
+                  <CheckCircle2 size={28} />
+                </div>
+                <h2 className="mt-4 text-lg font-bold text-slate-900">Report submitted</h2>
+                <p className="mt-2 text-sm text-slate-500">
+                  Thanks for helping improve your community. Your reference is{" "}
+                  <span className="font-semibold text-slate-700">{referenceNumber}</span>.
+                </p>
+                <button
+                  onClick={() => setReportOpen(false)}
+                  className="mt-6 rounded-xl bg-[#163b66] px-5 py-2.5 text-xs font-semibold text-white"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4d83b1]">New report</p>
+                    <h2 className="mt-1 text-xl font-bold text-slate-900">What needs attention?</h2>
+                    <p className="mt-1 text-sm text-slate-500">Give your city team the details they need to help.</p>
+                  </div>
+                  <button
+                    onClick={() => setReportOpen(false)}
+                    className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
+                    aria-label="Close report form"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                  <div className="mt-6 space-y-4">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-semibold text-slate-700">Report location</p>
+                          <p className="mt-1 text-[11px] text-slate-500">Choose the point on the map or use your current location.</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={useCurrentLocation((point) => { setLocation(point); setLocationError("") }, setLocationError)}
+                          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#245582]"
+                        >
+                          Use my location
+                        </button>
+                      </div>
+                      <LocationMap
+                        value={location}
+                        onChange={(point) => { setLocation(point); setLocationError("") }}
+                        className="mt-3 h-44"
+                      />
+                      <p className="mt-2 text-[11px] text-slate-500">{formatCoordinates(location)}</p>
+                      {locationError && <p className="mt-1 text-[11px] text-amber-700">{locationError}</p>}
+                    </div>
+
+                    <div className="rounded-xl border border-dashed border-slate-300 bg-white p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold text-slate-700">Photo evidence</p>
+                          <p className="mt-1 text-[11px] text-slate-500">Optional JPEG, PNG, WebP, or GIF up to 10 MB.</p>
+                        </div>
+                        <label className="cursor-pointer rounded-lg bg-[#eaf1f8] px-2.5 py-1.5 text-[11px] font-semibold text-[#245582]">
+                          Add photos
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            multiple
+                            className="sr-only"
+                            onChange={(event) => {
+                              const selected = Array.from(event.target.files ?? [])
+                              const invalid = selected.find(
+                                (file) => !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size > 10 * 1024 * 1024,
+                              )
+                              if (invalid) {
+                                setUploadError(`${invalid.name} is unsupported or larger than 10 MB.`)
+                                return
+                              }
+                              setUploadError("")
+                              setPhotos(selected)
+                            }}
+                          />
+                        </label>
+                      </div>
+                      {photos.length > 0 && (
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                          {photos.map((photo) => (
+                            <div key={`${photo.name}-${photo.size}`} className="overflow-hidden rounded-lg border border-slate-200">
+                              <img src={URL.createObjectURL(photo)} alt={photo.name} className="aspect-square w-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => setPhotos((current) => current.filter((item) => item !== photo))}
+                                className="w-full py-1 text-[10px] font-semibold text-rose-600"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {uploadError && <p role="alert" className="mt-2 text-[11px] text-rose-600">{uploadError}</p>}
+                    </div>
+
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Issue title
+                      <input
+                        value={title}
+                        onChange={(event) => setTitle(event.target.value)}
+                        required
+                        className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-[#7fa9cb] focus:bg-white"
+                        placeholder="e.g. Pothole on Oak Street"
+                      />
+                    </label>
+
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Category
+                      <select
+                        value={category}
+                        onChange={(event) => setCategory(event.target.value)}
+                        className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-[#7fa9cb] focus:bg-white"
+                      >
+                        <option value="General">Select a category</option>
+                        <option>Roads & sidewalks</option>
+                        <option>Street lighting</option>
+                        <option>Sanitation</option>
+                        <option>Water supply</option>
+                        <option>Parks & recreation</option>
+                      </select>
+                    </label>
+
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Location
+                      <div className="relative mt-1.5">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input
+                          value={address}
+                          onChange={(event) => setAddress(event.target.value)}
+                          required
+                          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none focus:border-[#7fa9cb] focus:bg-white"
+                          placeholder="Enter the location/address"
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Description
+                      <textarea
+                        value={description}
+                        onChange={(event) => setDescription(event.target.value)}
+                        required
+                        className="mt-1.5 min-h-[88px] w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-[#7fa9cb] focus:bg-white"
+                        placeholder="Tell us what you see..."
+                      />
+                    </label>
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-h-5 flex-1">
+                      {submitError && <p role="alert" className="text-[11px] font-medium text-rose-600">{submitError}</p>}
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setReportOpen(false)}
+                        className="rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={uploading}
+                        aria-busy={uploading}
+                        className="rounded-xl bg-[#163b66] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#102e50] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {uploading ? "Submitting..." : "Submit report"}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
