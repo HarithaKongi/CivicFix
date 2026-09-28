@@ -214,7 +214,7 @@ export default function Page() {
 
       {reportOpen && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/35 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
             {submitted ? (
               <div className="py-7 text-center">
                 <div className="mx-auto grid size-14 place-items-center rounded-full bg-emerald-100 text-emerald-600">
