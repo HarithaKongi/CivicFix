@@ -41,7 +41,7 @@ const navItems = [
   { label: 'Overview', icon: Home, href: '/' },
   { label: 'All issues', icon: Layers3, href: '/map' },
   { label: 'My reports', icon: FileWarning, href: '/my-issues' },
-  { label: 'Analytics', icon: BarChart3, href: '/department-issues' },
+  { label: 'Analytics', icon: BarChart3, href: '/analytics' },
 ]
 
 function StatusBadge({ children, tone }: { children: React.ReactNode; tone: 'blue' | 'amber' | 'green' | 'rose' }) {
