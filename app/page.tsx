@@ -125,7 +125,8 @@ export default function Page() {
     }
     try {
       setUploading(true)
-      const issueId = await createIssue({ title, description, category, address, latitude: location[0], longitude: location[1] })
+      const createdIssue = await createIssue({ title, description, category, address, latitude: location[0], longitude: location[1] })
+      const issueId = createdIssue.issueId
       for (const photo of photos) {
         const uploadUrl = await generateUploadUrl()
         const uploadResponse = await fetch(uploadUrl, { method: 'POST', headers: { 'Content-Type': photo.type }, body: photo })
@@ -134,14 +135,7 @@ export default function Page() {
         await addEvidence({ issueId, storageId, filename: photo.name, contentType: photo.type })
       }
       try { await triageIssue({ issueId }) } catch { /* deterministic server-side triage remains active */ }
-      const created = await new Promise<{ referenceNumber: string } | null>((resolve) => {
-        const timer = window.setInterval(() => {
-          const match = issueData?.find((issue) => issue._id === issueId)
-          if (match) { window.clearInterval(timer); resolve(match) }
-        }, 100)
-        window.setTimeout(() => { window.clearInterval(timer); resolve(null) }, 3000)
-      })
-      setReferenceNumber(created?.referenceNumber ?? 'your new issue')
+      setReferenceNumber(createdIssue.referenceNumber)
       setSubmitted(true)
       setTitle(''); setDescription(''); setCategory('General'); setAddress(''); setLocation(undefined); setLocationError(''); setPhotos([]); setUploading(false)
     } catch (error) {
