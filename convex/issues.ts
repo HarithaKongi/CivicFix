@@ -119,7 +119,7 @@ export const addResolutionEvidence = mutation({ args:{issueId:v.id("issues"),sto
   const profile=await requireProfile(ctx), issue=await ctx.db.get(args.issueId)
   if(!issue||!["department_staff","department_admin","super_admin"].includes(profile.role)) throw new Error("You are not authorized to add resolution evidence.")
   if(profile.role!=="super_admin"&&profile.departmentId!==issue.departmentId) throw new Error("This issue is outside your department.")
-  const metadata=await ctx.storage.getMetadata(args.storageId); if(!metadata||!/^image\\/(jpeg|png|webp|gif)$/.test(metadata.contentType??"")||metadata.size>10*1024*1024) throw new Error("Resolution evidence must be a JPEG, PNG, WebP, or GIF up to 10 MB.")
+  const metadata=await ctx.storage.getMetadata(args.storageId); if(!metadata||!(metadata.contentType??"").startsWith("image/")||metadata.size>10*1024*1024) throw new Error("Resolution evidence must be a JPEG, PNG, WebP, or GIF up to 10 MB.")
   const description=args.description.trim(); if(description.length<3||description.length>500) throw new Error("Add a concise evidence description.")
   return await ctx.db.insert("resolutionEvidence",{issueId:issue._id,storageId:args.storageId,uploadedBy:profile._id,description,createdAt:Date.now()})
 } })
